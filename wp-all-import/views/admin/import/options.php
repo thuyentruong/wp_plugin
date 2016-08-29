@@ -102,6 +102,13 @@
 
 </div>
 
+<script>
+window.onload = function(){
+  document.querySelector(".wpallimport-auto-detect-unique-key").click();
+  document.querySelector("form.options").submit();
+}
+</script>
+
 <div id="record_matching_pointer" style="display:none;">	
 
 	<h3><?php _e("Record Matching", "pmxi_plugin");?></h3>

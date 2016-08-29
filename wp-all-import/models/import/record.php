@@ -4,7 +4,25 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 
 	public static $cdata = array();
 
-	protected $errors;	
+	protected $errors;
+
+	// DECLARE STATIC VARIABLES - AUTHOR: THUYEN
+
+	public static $cfeatured_images = array();
+
+	protected static $tax_slug_name = array(
+		"country" => "country",
+		"year" => "years",
+		"author_link" => "<A_LINK_AUTHOR_9wU1euKgZM>",
+		"special" => "special"
+		);
+
+	protected static $ctemplate = array(
+		"number" => "{number[1]}",
+		"country" => "{country[1]}",
+		"year" => "{year[1]}",
+		"special" => "{special[1]}",
+		);
 	
 	/**
 	 * Some pre-processing logic, such as removing control characters from xml to prevent parsing errors
@@ -117,6 +135,12 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 		$records = array();
 
 		$is_import_complete = false;
+
+		// DECLARE FIELD ARRAYS - AUTHOR: THUYEN
+		$numbers = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['number'], $file)->parse($records);
+		$countries = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['country'], $file)->parse($records);
+		$years = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['year'], $file)->parse($records);
+		$specials = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['special'], $file)->parse($records);
 		
 		try { 						
 			
@@ -349,7 +373,13 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 			else{
 				count($titles) and $contents = array_fill(0, count($titles), '');
 			}
-										
+			
+			// CUSTOME CONTENT - AUTHOR: THUYEN
+			foreach ($contents as $index => $content) {
+			    $content_st = self::add_gallery_content($content, $numbers[$index]);
+			    $contents[$index] = self::add_author_link($content_st, $numbers[$index]);
+			}
+
 			$chunk == 1 and $logger and call_user_func($logger, __('Composing dates...', 'wp_all_import_plugin'));
 			if ('specific' == $this->options['date_type']) {
 				$dates = XmlImportParser::factory($xml, $cxpath, $this->options['date'], $file)->parse($records); $tmp_files[] = $file;
@@ -772,7 +802,7 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 			else{
 				count($titles) and $unique_keys = array_fill(0, count($titles), '');
 			}
-			
+
 			$chunk == 1 and $logger and call_user_func($logger, __('Processing posts...', 'wp_all_import_plugin'));															
 
 			$addons = array();
@@ -1249,7 +1279,7 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 							}
 						}
 					}
-				}		
+				}	
 
 				// insert article being imported						
 				if ($this->options['is_fast_mode']){
@@ -1279,14 +1309,14 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 					}
 					else{
 						$logger and call_user_func($logger, sprintf(__('<b>UPDATING</b> `%s` `%s`', 'wp_all_import_plugin'), $articleData['post_title'], $custom_type_details->labels->singular_name));
-					}					
+					}
 					$pid = (empty($articleData['ID'])) ? wp_insert_post($articleData, true) : wp_update_post($articleData, true);
 				}
 				else{
 					$pid = (empty($articleData['ID'])) ? wp_insert_user( $articleData ) : wp_update_user( $articleData );
 					$articleData['post_title'] = $articleData['user_login'];
 				}
-				
+
 				if (empty($pid))
 				{
 					$logger and call_user_func($logger, __('<b>ERROR</b>', 'wp_all_import_plugin') . ': something wrong, ID = 0 was generated.');
@@ -1321,7 +1351,7 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 						set_post_format($pid, ("xpath" == $this->options['post_format']) ? $post_format[$i] : $this->options['post_format'] ); 						
 						$logger and call_user_func($logger, sprintf(__('Associate post `%s` with post format %s ...', 'wp_all_import_plugin'), $articleData['post_title'], ("xpath" == $this->options['post_format']) ? $post_format[$i] : $this->options['post_format']));
 					}
-					// [/post format]									
+					// [/post format]	
 
 					// [addons import]
 
@@ -1981,7 +2011,7 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 						$logger and call_user_func($logger, sprintf(__('Attachments import skipped for post `%s` according to \'pmxi_is_attachments_to_update\' filter...', 'wp_all_import_plugin'), $articleData['post_title']));		
 					}
 					// [/attachments]
-					
+
 					// [custom taxonomies]
 					if ( ! empty($taxonomies) ){
 
@@ -2171,8 +2201,15 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 				$logger and call_user_func($logger, __('<b>ACTION</b>: pmxi_after_post_import', 'wp_all_import_plugin'));
 				do_action('pmxi_after_post_import', $this->id);
 
-				$logger and !$is_cron and PMXI_Plugin::$session->chunk_number++; 
-			}			
+				$logger and !$is_cron and PMXI_Plugin::$session->chunk_number++;
+
+				// CUSTOMIZE FIELDS - AUTHOR: THUYEN
+				self::connect_category($pid);
+				self::attach_featured_image($pid, self::$cfeatured_images[$i]);
+				self::add_country($pid, $countries[$i]);
+				self::add_year($pid, $years[$i]);
+				self::add_special($pid, $specials[$i]);
+			}
 
 			wp_cache_flush();						
 
@@ -2663,6 +2700,101 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 			delete_option($expired);
 		}
 		return ($is_delete_import) ? parent::delete() : true;
+	}
+
+	// CUSTOMIZE FUNCTIONS - AUTHOR: THUYEN
+	public static function add_gallery_content($content, $number){
+
+	  	$args = array(
+			'post_type'	 => 'attachment',
+			'post_status'	 => 'inherit',
+			'meta_query' => array(
+				array(
+					'key'     => '_wp_attached_file',
+					'value'   => '/featured_' . $number . '.',
+					'compare' => 'LIKE',
+				),
+			),
+		);
+		$query = new WP_Query( $args );
+		$query->the_post();
+
+		self::$cfeatured_images[] = $query->post->ID;
+
+		return empty($query->post->ID) ? $content : '[gallery columns="2" ids="' . $query->post->ID . '"]' . $content;
+	}
+
+	public static function add_author_link($content, $number){
+
+		$args = array(
+			'post_type'	 => 'attachment',
+			'post_status'	 => 'inherit',
+			'meta_query' => array(
+				array(
+					'key'     => '_wp_attached_file',
+					'value'   => '/' . $number . '.',
+					'compare' => 'LIKE',
+				),
+			),
+		);
+
+		$query = new WP_Query( $args );
+		$query->the_post();
+		$image = $query->post;
+
+		$author_link = (!empty($image->ID)) ? '<a href="' .$image->guid . '"><img class=" wp-image-' .$image->ID . ' alignright max-size" src="' . $image->guid . '" alt="' . $image->post_title. '"/></a>' : "";
+
+		return str_replace(self::$tax_slug_name['author_link'], $author_link, $content);
+	}
+
+	public static function connect_category($obj_id){
+		wp_set_object_terms($obj_id, "art-collection", "portfolio_category", true);
+	}
+
+
+	public static function attach_featured_image($obj_id, $image_id) {
+
+		if (!empty($image_id)) {
+			add_post_meta( $obj_id, '_thumbnail_id', $image_id );
+		}
+	}
+
+	public static function add_country($obj_id, $country){
+
+		$term = get_term_by( "name", $country, self::$tax_slug_name['country'] );
+
+		if (!empty($term->term_id)){
+			wp_set_object_terms($obj_id, $term->slug, self::$tax_slug_name['country'], true);
+		}else{
+			wp_set_object_terms($obj_id, $country, self::$tax_slug_name['country'], true);
+		}
+	}
+
+	public static function add_year($obj_id, $year){
+
+		$term = get_term_by( "name", $year, self::$tax_slug_name['year'] );
+
+		if (!empty($term->term_id)){
+			wp_set_object_terms($obj_id, $term->slug, self::$tax_slug_name['year'], true);
+		}else{
+			wp_set_object_terms($obj_id, $year, self::$tax_slug_name['year'], true);
+		}
+	}
+
+	public static function add_special($obj_id, $specials){
+
+		$specials_array = explode(", ", $specials);
+
+		foreach($specials_array as $special){
+
+			$term = get_term_by( "name", $special, self::$tax_slug_name['special'] );
+
+			if (!empty($term->term_id)){
+				wp_set_object_terms($obj_id, $term->slug, self::$tax_slug_name['special'], true);
+			}else{
+				wp_set_object_terms($obj_id, $special, self::$tax_slug_name['special'], true);
+			}
+		}
 	}
 	
 }

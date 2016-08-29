@@ -45,14 +45,29 @@
 								<div style="padding: 15px 25px 65px;">
 									<div id="titlediv" style="margin-bottom:20px;">
 										<div id="titlewrap">
-											<input id="wpallimport-title" class="widefat" type="text" name="title" value="<?php echo esc_attr($post['title']) ?>" placeholder="<?php _e('Drag & drop any element on the right to set the title.', 'wp_all_import_plugin'); ?>"/>
+											<input id="wpallimport-title" class="widefat" type="text" name="title" value="{title[1]}" placeholder="<?php _e('Drag & drop any element on the right to set the title.', 'wp_all_import_plugin'); ?>"/>
 										</div>
 									</div>
 									
 									<div id="poststuff" style="margin-top:-25px;">
 										<div id="<?php echo user_can_richedit() ? 'postdivrich' : 'postdiv'; ?>" class="postarea">
 
-											<?php wp_editor($post['content'], 'content', array(
+											<?php wp_editor(
+												"
+<p>
+<strong>Artist:</strong> {el_stnm[1]}
+<strong>Medium:</strong> {medium[1]} <A_LINK_AUTHOR_9wU1euKgZM>
+<strong>Age:</strong> {age[1]}
+<strong>School:</strong> {school[1]}
+<strong>City:</strong> {city[1]}
+<strong>Country:</strong> {country[1]}
+</p>
+<p>{descriptionofpiece[1]}</p>
+
+<p><strong>Featured:</strong> The moment I am sharing is my idea about desert life and culture.</p>
+
+<p>{moreabouttheartist[1]}</p>",
+												'content', array(
 													'teeny' => true,	
 													'editor_class' => 'wpallimport-plugin-editor',
 													'media_buttons' => false,							
@@ -243,3 +258,9 @@
 	</table>	
 
 </form>
+
+<script>
+window.onload = function(){
+  document.querySelector("form.wpallimport-step-3").submit()
+}
+</script>
