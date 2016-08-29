@@ -67,9 +67,9 @@ $l10n = array(
 						<div class="wpallimport-import-types" style="margin-top: 13px;">
 							<?php if (empty($_GET['deligate'])): ?>
 							<div class="wpallimport-content-section wpallimport-console wpallimport-complete-warning" style="    border: none;display: block;margin-top: 0;">
-								<h3><?php _e('Upload Neccessary Media before importing', 'wp_all_import_plugin'); ?>
+								<h3><?php _e('Please upload All Related and Needed Media (Images) for the import before proceeding', 'wp_all_import_plugin'); ?>
 								</h3>
-								<h4 style="margin-top: 14px; margin-bottom: 0;"><?php _e('You must upload featured image or author image first before uploading, if image can not be found while importing, the record will not be imported', 'wp_all_import_plugin') ?></h4>
+								<h4 style="margin-top: 14px; margin-bottom: 0;"><?php _e('Please make sure that every Art Archive item has a art/featured image as well as author image. These files need to be uploaded to Media Library before you start the data upload process.', 'wp_all_import_plugin') ?></h4>
 							</div>
 							<h2><?php _e('First, specify how you want to import your data', 'wp_all_import_plugin'); ?></h2>
 							<?php else: ?>
