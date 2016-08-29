@@ -146,7 +146,7 @@
                             });
 
                             var $checkoutButtons =
-                                $("input[type=submit].alt, .checkout-button, a[href=\\"' . trim(json_encode($checkoutPageUrl), '"') . '\\"], .-checkout-button");
+                                $("input[type=submit].alt#place_order");
 
                             $checkoutButtons.addClass("-checkout-button");
 
