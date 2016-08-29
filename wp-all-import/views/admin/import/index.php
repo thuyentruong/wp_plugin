@@ -64,8 +64,13 @@ $l10n = array(
 						
 						<div class="clear"></div>											
 						
-						<div class="wpallimport-import-types">
-							<?php if (empty($_GET['deligate'])): ?>	
+						<div class="wpallimport-import-types" style="margin-top: 13px;">
+							<?php if (empty($_GET['deligate'])): ?>
+							<div class="wpallimport-content-section wpallimport-console wpallimport-complete-warning" style="    border: none;display: block;margin-top: 0;">
+								<h3><?php _e('Upload Neccessary Media before importing', 'wp_all_import_plugin'); ?>
+								</h3>
+								<h4 style="margin-top: 14px; margin-bottom: 0;"><?php _e('You must upload featured image or author image first before uploading, if image can not be found while importing, the record will not be imported', 'wp_all_import_plugin') ?></h4>
+							</div>
 							<h2><?php _e('First, specify how you want to import your data', 'wp_all_import_plugin'); ?></h2>
 							<?php else: ?>
 							<h2 style="margin-bottom: 10px;"><?php _e('First, specify previously exported file', 'wp_all_import_plugin'); ?></h2>
@@ -74,14 +79,6 @@ $l10n = array(
 							<a class="wpallimport-import-from wpallimport-upload-type <?php echo ('upload' == $post['type'] and ! empty($_POST)) ? 'selected' : '' ?>" rel="upload_type" href="javascript:void(0);">
 								<span class="wpallimport-icon"></span>
 								<span class="wpallimport-icon-label"><?php _e('Upload a file', 'wp_all_import_plugin'); ?></span>
-							</a>
-							<a class="wpallimport-import-from wpallimport-url-type <?php echo 'url' == $post['type'] ? 'selected' : '' ?>" rel="url_type" href="javascript:void(0);">
-								<span class="wpallimport-icon"></span>
-								<span class="wpallimport-icon-label"><?php _e('Download from URL', 'wp_all_import_plugin'); ?></span>
-							</a>
-							<a class="wpallimport-import-from wpallimport-file-type <?php echo 'file' == $post['type'] ? 'selected' : '' ?>" rel="file_type" href="javascript:void(0);">
-								<span class="wpallimport-icon"></span>
-								<span class="wpallimport-icon-label"><?php _e('Use existing file', 'wp_all_import_plugin'); ?></span>
 							</a>
 						</div>
 						
@@ -148,104 +145,6 @@ $l10n = array(
 						<?php if (empty($_GET['deligate'])): ?>	
 						
 						<div class="wpallimport-upload-resource-step-two">
-						
-							<div class="wpallimport-choose-post-type">
-
-								<input type="hidden" name="wizard_type" value="<?php echo $post['wizard_type']; ?>"/>
-
-								<h2 style="margin-top:0;"><?php _e('Import data from this file into...', 'wp_all_import_plugin'); ?></h2>
-								
-								<div class="wpallimport-choose-data-type">
-									<a class="wpallimport-import-to rad4 wpallimport-to-new-items <?php if ($post['wizard_type'] == 'new') echo 'wpallimport-import-to-checked'; ?>" rel="new" href="javascript:void(0);">
-										<span class="wpallimport-import-to-title"><?php _e('New Items', 'wp_all_import_plugin'); ?></span>
-										<span class="wpallimport-import-to-arrow"></span>
-									</a>
-									<a class="wpallimport-import-to rad4 wpallimport-to-existing-items <?php if ($post['wizard_type'] == 'matching') echo 'wpallimport-import-to-checked'; ?>" rel="matching" href="javascript:void(0);">
-										<span class="wpallimport-import-to-title"><?php _e('Existing Items', 'wp_all_import_plugin'); ?></span>
-										<span class="wpallimport-import-to-arrow"></span>
-									</a>
-								</div>
-
-								<?php
-									
-									$custom_types = get_post_types(array('_builtin' => true), 'objects') + get_post_types(array('_builtin' => false, 'show_ui' => true), 'objects'); 
-									foreach ($custom_types as $key => $ct) {
-										if (in_array($key, array('attachment', 'revision', 'nav_menu_item', 'shop_webhook', 'import_users'))) unset($custom_types[$key]);
-									}
-									$custom_types = apply_filters( 'pmxi_custom_types', $custom_types );
-
-									$hidden_post_types = get_post_types(array('_builtin' => false, 'show_ui' => false), 'objects');
-									foreach ($hidden_post_types as $key => $ct) {
-										if (in_array($key, array('attachment', 'revision', 'nav_menu_item'))) unset($hidden_post_types[$key]);
-									}
-									$hidden_post_types = apply_filters( 'pmxi_custom_types', $hidden_post_types );
-
-								?>	
-								<div class="wpallimport-choose-import-direction">
-									<div class="wpallimport-extra-text-left">
-										<div class="wpallimport-new-records"><?php _e('Create new', 'wp_all_import_plugin'); ?></div>
-										<div class="wpallimport-existing-records"><?php _e('Import to existing', 'wp_all_import_plugin'); ?></div>
-									</div>
-									<div class="wpallimport-extra-text-right">
-										<div class="wpallimport-new-records"><?php _e('for each record in my data file.', 'wp_all_import_plugin'); ?></div>
-										<div class="wpallimport-existing-records"><?php _e('and update some or all of their data.', 'wp_all_import_plugin'); ?>
-											<a class="wpallimport-help" href="#help" style="position: relative; top: -2px;" original-title="The Existing Items option is commonly used to update existing products with new stock quantities while leaving all their other data alone, update properties on your site with new pricing, etc. <br/><br/> In Step 4, you will map the records in your file to the existing items on your site and specify which data points will be updated and which will be left alone.">?</a>								
-										</div>
-									</div>
-									<select name="custom_type_selector" id="custom_type_selector" class="wpallimport-post-types">								
-										<?php if ( ! empty($custom_types)): $unknown_cpt = array(); ?>							
-											<?php foreach ($custom_types as $key => $ct) :?>	
-												<?php 
-													$image_src = 'dashicon-cpt';
-
-													$cpt = $key;
-													$cpt_label = $ct->labels->name;													
-												
-													if (  in_array($cpt, array('post', 'page', 'product', 'shop_order', 'shop_coupon') ) )
-													{
-														$image_src = 'dashicon-' . $cpt;										
-													}
-													else
-													{
-														$unknown_cpt[$key] = $ct;
-														continue;
-													}														
-												?>
-											<option value="<?php echo $cpt; ?>" data-imagesrc="dashicon <?php echo $image_src; ?>" <?php if ( $cpt == $post['custom_type'] ):?>selected="selected"<?php endif; ?>><?php echo $cpt_label; ?></option>
-											<?php endforeach; ?>
-											<?php if (class_exists('PMUI_Plugin')): ?>
-											<option value="import_users" data-imagesrc="dashicon dashicon-import_users" <?php if ( 'import_users' == $post['custom_type'] ):?>selected="selected"<?php endif; ?>><?php _e('Users', 'wp_all_import_plugin'); ?></option>
-											<?php endif; ?>
-											<?php if ( ! empty($unknown_cpt)):  ?>
-												<?php foreach ($unknown_cpt as $key => $ct):?>
-													<?php
-													$image_src = 'dashicon-cpt';
-													$cpt_label = $ct->labels->name;												
-													?>
-													<option value="<?php echo $key;?>" data-imagesrc="dashicon <?php echo $image_src; ?>" <?php if ($key == $post['custom_type']) echo 'selected="selected"'; ?>><?php echo $cpt_label; ?></option>
-												<?php endforeach ?>
-											<?php endif;?>
-
-										<?php endif; ?>
-										<?php if ( ! empty($hidden_post_types)): ?>							
-											<?php foreach ($hidden_post_types as $key => $cpt) :?>	
-												<?php 
-													$image_src = 'dashicon-cpt';
-													if (  in_array($key, array('post', 'page', 'product') ) )
-														$image_src = 'dashicon-' . $key;
-												?>
-											<option value="<?php echo $key; ?>" data-imagesrc="dashicon <?php echo $image_src; ?>"><?php echo $cpt->labels->name; ?></option>								
-											<?php endforeach; ?>
-										<?php endif; ?>			
-									</select>							
-								</div>
-								<div class="clear wpallimport-extra-text-below">
-									<!--div class="wpallimport-existing-records">
-										<p><?php _e('In Step 4, you will map the records in your file to the existing items on your site and specify which data points will be updated and which will be left alone.', 'wp_all_import_plugin'); ?></p>
-										<p><?php _e('The Existing Items option is commonly used to update existing products with new stock quantities while leaving all their other data alone, update properties on your site with new pricing, etc.', 'wp_all_import_plugin'); ?></p>
-									</div-->
-								</div>
-							</div>
 						</div>
 						<?php endif; ?>
 					</div>		
