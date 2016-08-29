@@ -3,7 +3,7 @@
 Plugin Name: WooCommerce Delivery Slots
 Plugin URI: https://iconicwp.com
 Description: Allow your customers to select a delivery slot for their order
-Version: 1.7.0
+Version: 1.7.2
 Author: Iconic
 Author Email: support@iconicwp.com
 Text Domain: jckwds
@@ -14,7 +14,7 @@ class jckWooDeliverySlots {
     public $name = 'WooCommerce Delivery Slots';
     public $shortname = 'Delivery Slots';
     public $slug = 'jckwds';
-    public $version = "1.7.0";
+    public $version = "1.7.2";
     public $db_version = "1.6";
     public $plugin_path;
     public $plugin_url;
@@ -174,7 +174,9 @@ class jckWooDeliverySlots {
             add_filter( 'request',                                               array( $this, 'orderby_shop_order_columns' ) );
 
             add_action( 'woocommerce_admin_order_data_after_billing_address',    array( $this, 'display_admin_order_meta' ), 10, 1 );
-            add_action( 'woocommerce_cancelled_order',                           array( $this, 'cancel_order' ), 10 );
+            add_action( 'woocommerce_cancelled_order', array( $this, 'cancel_order' ), 10, 1 );
+            add_action( 'deleted_post', array( $this, 'cancel_order' ), 10, 1 );
+            add_action( 'wc-cancelled_shop_order', array( $this, 'cancel_order' ), 10, 1 );
 
         } else {
 
@@ -192,7 +194,7 @@ class jckWooDeliverySlots {
         // greater than 2.3.0
         if( version_compare($this->get_woo_version_number(), '2.3.0') >= 0 ) {
 
-            add_filter( 'woocommerce_email_order_meta', array( $this, 'email_order_delivery_details' ), 10, 3 );
+            add_filter( 'woocommerce_email_order_meta', array( $this, 'email_order_delivery_details' ), 10, 4 );
 
         // less than 2.3.0
         } else {
@@ -595,12 +597,28 @@ class jckWooDeliverySlots {
 
             if( is_array($settings['timesettings_timesettings_timeslots']) ) {
 
+                $default_cutoff = "";
                 $default_lockout = 10;
+                $cutoff_numeric = true;
                 $lockout_numeric = true;
                 $empty_days = false;
                 $valid_time_format = true;
 
                 $i = 0; foreach( $settings['timesettings_timesettings_timeslots'] as $timeslot ) {
+
+                    // validate cutoff
+
+                    if( isset( $timeslot['cutoff'] ) ) {
+
+                        if( !empty( $timeslot['cutoff'] ) && ( $timeslot['cutoff'] <= 0 || !is_numeric( $timeslot['cutoff'] ) ) ) {
+
+                            $settings['timesettings_timesettings_timeslots'][$i]['cutoff'] = $default_cutoff;
+
+                            $cutoff_numeric = false;
+
+                        }
+
+                    }
 
                     // validate lockout
 
@@ -657,6 +675,16 @@ class jckWooDeliverySlots {
                     }
 
                 $i++; }
+
+                // validate cutoff
+
+                if( !$cutoff_numeric ) {
+
+                    $message = __( 'The "Allow Bookings Up To (x) Minutes Before Slot" time slot setting should be a positive integer. It has been removed.', 'jckwds' );
+
+                    add_settings_error( 'timesettings_timesettings_timeslots_cutoff', esc_attr( 'jckwds-error' ), $message, 'error' );
+
+                }
 
                 // validate lockout
 
@@ -843,34 +871,40 @@ class jckWooDeliverySlots {
 
         global $woocommerce;
 
-        if( isset($_POST['jckwds-delivery-date'])) {
+	$city = (isset($_POST['ship_to_different_address']) && $_POST['ship_to_different_address'] == 1) ? $_POST['shipping_city'] : $_POST['billing_city'];
+	
+	if ($city == "HCMC"){
 
-            // Check if set, if its not set add an error.
+		if( isset($_POST['jckwds-delivery-date'])) {
 
-            if ((!$_POST['jckwds-delivery-date'] || $_POST['jckwds-delivery-date'] == '') && $this->settings['datesettings_datesettings_setup_mandatory']) {
-                if( function_exists('wc_add_notice') ) {
-                    wc_add_notice( __('Please select a valid delivery date.', 'jckwds'), 'error' );
-                } else {
-                    $woocommerce->add_error( __('Please select a valid delivery date.', 'jckwds') );
-                }
-            }
+		    // Check if set, if its not set add an error.
 
-        }
+		    if ((!$_POST['jckwds-delivery-date'] || $_POST['jckwds-delivery-date'] == '') && $this->settings['datesettings_datesettings_setup_mandatory']) {
+		        if( function_exists('wc_add_notice') ) {
+		            wc_add_notice( __('Please select a valid delivery date.', 'jckwds'), 'error' );
+		        } else {
+		            $woocommerce->add_error( __('Please select a valid delivery date.', 'jckwds') );
+		        }
+		    }
 
-        if( isset($_POST['jckwds-delivery-time'])) {
+		}
+	
 
-            $timeslot_id = $this->extract_timeslot_id_from_option_value( $_POST['jckwds-delivery-time'] );
+		if( isset($_POST['jckwds-delivery-time'])) {
 
-            // Check if set, if its not set add an error.
+		    $timeslot_id = $this->extract_timeslot_id_from_option_value( $_POST['jckwds-delivery-time'] );
 
-            if( !is_numeric($timeslot_id) && $this->settings['timesettings_timesettings_setup_mandatory'] ) {
-                if( function_exists('wc_add_notice') ) {
-                    wc_add_notice( __('Please select a time slot.', 'jckwds'), 'error' );
-                } else {
-                    $woocommerce->add_error( __('Please select a time slot.', 'jckwds') );
-                }
-            }
+		    // Check if set, if its not set add an error.
 
+		    if( !is_numeric($timeslot_id) && $this->settings['timesettings_timesettings_setup_mandatory'] ) {
+		        if( function_exists('wc_add_notice') ) {
+		            wc_add_notice( __('Please select a time slot.', 'jckwds'), 'error' );
+		        } else {
+		            $woocommerce->add_error( __('Please select a time slot.', 'jckwds') );
+		        }
+		    }
+
+		}
         }
 
     }
@@ -1134,8 +1168,9 @@ class jckWooDeliverySlots {
      * @param obj $order
      * @param bool $sent_to_admin
      * @param bool $plain_text
+     * @param obj $email
      */
-    function email_order_delivery_details( $order, $sent_to_admin, $plain_text ) {
+    function email_order_delivery_details( $order, $sent_to_admin, $plain_text, $email ) {
 
         if( !$this->has_date_or_time( $order ) )
             return;
@@ -1755,7 +1790,7 @@ class jckWooDeliverySlots {
             if( isset( $timeslots[$timeslot_id] ) ) {
 
                 $timeslots[$timeslot_id]['available'] = $this->is_timeslot_allowed_for_postcode( $timeslots[$timeslot_id] );
-                return $timeslots[$timeslot_id];
+                return apply_filters( 'jckwds-timeslot', $timeslots[$timeslot_id] );
 
             } else {
 
@@ -1765,7 +1800,7 @@ class jckWooDeliverySlots {
 
         }
 
-        return $timeslots;
+        return apply_filters( 'jckwds-timeslots', $timeslots );
 
     }
 
@@ -1942,7 +1977,8 @@ class jckWooDeliverySlots {
 
         $date = $date ? $date : $this->current_ymd;
 
-        $cutoff = $this->settings['timesettings_timesettings_cutoff'];
+        $cutoff = isset( $timeslot['cutoff'] ) && !empty( $timeslot['cutoff'] ) ? $timeslot['cutoff'] : $this->settings['timesettings_timesettings_cutoff'];
+
         $timeslot_ymdgi = $date.$timeslot['timefrom']['stripped'];
         $timeslot_date_time = DateTime::createFromFormat('YmdGi', $timeslot_ymdgi);
 
@@ -2435,21 +2471,24 @@ class jckWooDeliverySlots {
         if( !$timeslots )
             return $available_timeslots;
 
-        foreach($timeslots as $timeslot){
+        foreach( $timeslots as $timeslot ) {
 
             $slot_id = sprintf('%s_%s', $date, $timeslot['id']);
 
             $slot_allowed_on_day = $this->is_timeslot_available_on_day( $date_timestamp, $timeslot );
-            $slots_available_count = $this->get_slots_available_count( $timeslot, $date );
             $in_past = $this->is_timeslot_in_past( $timeslot, $date );
             $slot_allowed_for_method = $this->is_timeslot_allowed_for_method( $timeslot );
 
-            if( $slot_allowed_on_day && $slots_available_count > 0 && !$in_past && $timeslot['available'] && $slot_allowed_for_method ) {
+            if( !$slot_allowed_on_day || $in_past || !$timeslot['available'] || !$slot_allowed_for_method )
+                continue;
 
-                $timeslot['slot_id'] = $slot_id;
-                $available_timeslots[] = $timeslot;
+            $slots_available_count = $this->get_slots_available_count( $timeslot, $date );
 
-            }
+            if( $slots_available_count <= 0 )
+                continue;
+
+            $timeslot['slot_id'] = $slot_id;
+            $available_timeslots[] = $timeslot;
 
         }
 
@@ -2618,9 +2657,20 @@ class jckWooDeliverySlots {
 
                         $title = empty( $method->method_title ) ? ucfirst( $method->id ) : $method->method_title;
                         $class = str_replace('wc_shipping_', '', strtolower( get_class( $method ) ) );
-                        $value = sprintf('%s:%d', $class, $method->instance_id);
 
-                        $shipping_method_options[ $value ] = esc_html( sprintf( '%s: %s', $shipping_zone->get_zone_name(), $title ) );
+                        if( $class === "table_rate" ) {
+
+                            $trs_methods = $this->get_trs_methods_zones( $method, $class, $shipping_zone );
+
+                            $shipping_method_options = $shipping_method_options + $trs_methods;
+
+                        } else {
+
+                            $value = sprintf('%s:%d', $class, $method->instance_id);
+
+                            $shipping_method_options[ $value ] = esc_html( sprintf( '%s: %s', $shipping_zone->get_zone_name(), $title ) );
+
+                        }
 
                     }
 
@@ -2628,41 +2678,45 @@ class jckWooDeliverySlots {
 
             }
 
-        } else {
+        }
 
-            $shipping_methods = WC()->shipping->load_shipping_methods();
+        $shipping_methods = WC()->shipping->load_shipping_methods();
 
-            foreach ( $shipping_methods as $method ) {
+        foreach ( $shipping_methods as $method ) {
 
-                if ( ! $method->has_settings() )
-                    continue;
+            if ( ! $method->has_settings() )
+                continue;
 
-                $title = empty( $method->method_title ) ? ucfirst( $method->id ) : $method->method_title;
-                $class = get_class( $method );
+            $title = empty( $method->method_title ) ? ucfirst( $method->id ) : $method->method_title;
+            $class = get_class( $method );
 
-                if( $class == "WAS_Advanced_Shipping_Method" ) {
+            if( $class == "WAS_Advanced_Shipping_Method" ) {
 
-                    $was_methods = $this->get_was_methods();
+                $was_methods = $this->get_was_methods();
 
-                    $shipping_method_options = array_merge( $shipping_method_options, $was_methods );
+                $shipping_method_options = $shipping_method_options + $was_methods;
 
-                } elseif( $class == "BE_Table_Rate_Shipping" ) {
+            } elseif( $class == "BE_Table_Rate_Shipping" ) {
 
-                    $trs_methods = $this->get_trs_methods();
+                $trs_methods = $this->get_trs_methods();
 
-                    $shipping_method_options = array_merge( $shipping_method_options, $trs_methods );
+                $shipping_method_options = $shipping_method_options + $trs_methods;
 
-                } elseif( $class == "WC_Shipping_WooShip" ) {
+            } elseif( $class == "WC_Shipping_WooShip" ) {
 
-                    $wooship_methods = $this->get_wooship_methods();
+                $wooship_methods = $this->get_wooship_methods();
 
-                    $shipping_method_options = array_merge( $shipping_method_options, $wooship_methods );
+                $shipping_method_options = $shipping_method_options + $wooship_methods;
 
-                } else {
+            } elseif( $class == "MH_Table_Rate_Plus_Shipping_Method" ) {
 
-                    $shipping_method_options[ strtolower( $class ) ] = esc_html( $title );
+                $table_rate_plus_methods = $this->get_table_rate_plus_methods( $method );
 
-                }
+                $shipping_method_options = $shipping_method_options + $table_rate_plus_methods;
+
+            } else {
+
+                $shipping_method_options[ strtolower( $class ) ] = esc_html( $title );
 
             }
 
@@ -2744,6 +2798,40 @@ class jckWooDeliverySlots {
     }
 
     /**
+     * Helper: Get "WooCommerce Table Rate Shipping" methods for Zone based shipping
+     *
+     * @since 1.7.1
+     * @param $method
+     * @param str $class Name of the method's class
+     * @param $shipping_zone
+     * @retrun arr
+     */
+    public function get_trs_methods_zones( $method, $class, $shipping_zone ) {
+
+        $methods_array = array();
+        $rates = $method->get_shipping_rates();
+
+        if( !$rates || empty( $rates ) )
+            return $methods_array;
+
+        $title = !empty( $method->title ) ? $method->title : ucfirst( $method->id );
+
+        foreach( $rates as $rate ) {
+
+            $value = sprintf('%s:%d', $class, $method->instance_id);
+
+            if( isset( $methods_array[ $value ] ) )
+                continue;
+
+            $methods_array[ $value ] = esc_html( sprintf( '%s: %s', $shipping_zone->get_zone_name(), $title ) );
+
+        }
+
+        return $methods_array;
+
+    }
+
+    /**
      * Helper: Get "WooShip" methods
      *
      * @return arr
@@ -2758,6 +2846,37 @@ class jckWooDeliverySlots {
             foreach ($wooship->config['shipping_methods'] as $method_key => $method) {
 
                 $methods_array[ sprintf('wooship_%d', $method_key) ] = esc_html( $method['title'] );
+
+            }
+        }
+
+        return $methods_array;
+
+    }
+
+    /**
+     * Helper: Get "Table Rate Plus" methods
+     *
+     * @param MH_Table_Rate_Plus_Shipping_Method $method
+     * @return arr
+     */
+    public function get_table_rate_plus_methods( $method ) {
+
+        $methods_array = array();
+        $zones = $method->zones;
+        $services = $method->services;
+        $rates = $method->table_rates;
+
+        if ($rates && !empty($rates) ) {
+
+            foreach ($rates as $rate) {
+
+                $zone = isset( $zones[ $rate['zone'] - 1 ]['name'] ) ? $zones[ $rate['zone'] - 1 ]['name'] : __('Everywhere Else', 'jckwds');
+                $service = $services[ $rate['service'] - 1 ]['name'];
+
+                $title = sprintf('%s: %s', $zone, $service);
+
+                $methods_array[ sprintf('mh_wc_table_rate_plus_%d', $rate['id']) ] = esc_html( $title );
 
             }
         }
@@ -2981,7 +3100,45 @@ class jckWooDeliverySlots {
         if( in_array($chosen_method, $timeslot['shipping_methods']) )
             return true;
 
+        foreach( $timeslot['shipping_methods'] as $timeslot_shipping_method ) {
+            if( strpos($chosen_method, $timeslot_shipping_method, 0) === 0 )
+                return true;
+        }
+
         return false;
+
+    }
+
+    /**
+     * Cancel order
+     *
+     * If an order is cancelled, delete the time slot, too
+     *
+     * @param int $order_id
+     */
+    public function cancel_order( $order_id ) {
+
+        $post_type = get_post_type( $order_id );
+
+        if( $post_type !== "shop_order" ) { return; }
+
+        global $wpdb;
+
+        $delete = $wpdb->delete(
+            $this->reservations_db_table_name,
+            array(
+                'order_id' => $order_id
+            ),
+            array(
+                '%d'
+            )
+        );
+
+        if( !$delete ) { return; }
+
+        delete_post_meta( $order_id, $this->date_meta_key );
+        delete_post_meta( $order_id, $this->timeslot_meta_key );
+        delete_post_meta( $order_id, $this->timestamp_meta_key );
 
     }
 
