@@ -327,7 +327,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 					'xpath' => (!empty($xpath)) ? $xpath : '',
 					'feed_type' => $post['feed_type'],
 					'wizard_type' => $post['wizard_type'],
-					'custom_type' => $post['custom_type'],
+					'custom_type' => "portfolio",
 					'source' => $source,										
 					'encoding' => 'UTF-8',
 					'is_csv' => PMXI_Plugin::$is_csv,
