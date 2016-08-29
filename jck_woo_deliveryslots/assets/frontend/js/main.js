@@ -80,7 +80,7 @@
 
             if( !jckwds.vars.is_checkout || !jckwds.vars.has_multi_step ) { return; }
 
-            jckwds.els.multi_step_checkout.on('init', function(){
+            jckwds.els.multi_step_checkout.init(function(){
 
                 jckwds.cache();
                 jckwds.setup_checkout_fields();
@@ -581,10 +581,14 @@
             }
 
             var shipping_method_value = $('.shipping_method').length > 1 ? $('.shipping_method:checked', 'form.checkout').val() : $('.shipping_method', 'form.checkout').val(),
-                method_found = false;
+                method_found = false,
+                selected_shipping_method = shipping_method_value.replace("wc_shipping_", "");
 
             $.each( jckwds_vars.settings.general_setup_shipping_methods, function( key, shipping_method ) {
-                if( shipping_method_value.replace("wc_shipping_", "") === shipping_method.replace("wc_shipping_", "") ) {
+
+                shipping_method = shipping_method.replace("wc_shipping_", "");
+
+                if( selected_shipping_method === shipping_method || selected_shipping_method.match("^"+shipping_method) ) {
                     method_found = true;
                 }
             });

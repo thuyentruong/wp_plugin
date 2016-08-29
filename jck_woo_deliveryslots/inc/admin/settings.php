@@ -321,7 +321,7 @@ function jckwds_settings( $wpsf_settings ) {
                     array(
                         'id' => 'cutoff',
                         'title' => __('Allow Bookings Up To (x) Minutes Before Slot', 'jckwds'),
-                        'subtitle' => __('This option will prevent bookings being made too close to the delivery time. (Check your timezone in WordPress Settings).', 'jckwds'),
+                        'subtitle' => __('This option will prevent bookings being made too close to the delivery time. Can be overridden on an individual time slot basis. (Check your timezone in WordPress Settings).', 'jckwds'),
                         'type' => 'text',
                         'default' => '30',
                         'placeholder' => '',
@@ -371,6 +371,13 @@ function jckwds_settings( $wpsf_settings ) {
                                         __('PM', 'jckwds')
                                     )
                                 )
+                            ),
+                            array(
+                                'id' => 'cutoff',
+                                'title' => __('Allow Bookings Up To (x) Minutes Before Slot', 'jckwds'),
+                                'subtitle' => '',
+                                'type' => 'text',
+                                'placeholder' => ''
                             ),
                             array(
                                 'id' => 'lockout',
