@@ -2381,7 +2381,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 		wp_defer_comment_counting(true);
 
 		if ( PMXI_Plugin::is_ajax() or ! $ajax_processing ) {	
-			
+
 			$functions  = $wp_uploads['basedir'] . DIRECTORY_SEPARATOR . WP_ALL_IMPORT_UPLOADS_BASE_DIRECTORY . DIRECTORY_SEPARATOR . 'functions.php';
 			if ( @file_exists($functions) )
 				require_once $functions;
@@ -2531,6 +2531,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 											'percentage' => ceil(($processed_records/$import->count) * 100),
 											'warnings' => PMXI_Plugin::$session->warnings,
 											'errors' => PMXI_Plugin::$session->errors,
+											'fail_records' => implode(", ", PMXI_Import_Record::$fail_records),
 											'log' => $log_data,
 											'done' => false,
 											'records_per_request' => $import->options['records_per_request'],
@@ -2557,7 +2558,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 				    else break;					    				    																		
 				}
 			}									
-		}	
+		}
 
 		// delete missing records
 		if ( ( PMXI_Plugin::is_ajax() and empty(PMXI_Plugin::$session->local_paths) ) or ! $ajax_processing )
@@ -2595,7 +2596,7 @@ class PMXI_Admin_Import extends PMXI_Controller_Admin {
 		}		
 		
 		if ( ( PMXI_Plugin::is_ajax() and empty(PMXI_Plugin::$session->local_paths) ) or ! $ajax_processing or ! empty($import->canceled) ) {
-						
+
 			$import->set(array(
 				'processing' => 0, // unlock cron requests	
 				'triggered' => 0,

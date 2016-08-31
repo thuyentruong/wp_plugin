@@ -1,3 +1,6 @@
+<style>
+.wpallimport-fail-records{display: none;}
+</style>
 <h2 class="wpallimport-wp-notices"></h2>
 
 <div class="inner-content wpallimport-step-6 wpallimport-wrapper">
@@ -31,11 +34,24 @@
 				<span id="right_progress"><?php _e('Created','wp_all_import_plugin');?> <span id="created_count"><?php echo $update_previous->created; ?></span> / <?php _e('Updated','wp_all_import_plugin');?> <span id="updated_count"><?php echo $update_previous->updated; ?></span> <?php _e('of', 'wp_all_import_plugin');?> <span id="of"><?php echo $update_previous->count; ?></span> <?php _e('records', 'wp_all_import_plugin'); ?></span>				
 			</div>			
 		</div>
-		
+
 		<?php $custom_type = get_post_type_object( PMXI_Plugin::$session->options['custom_type'] ); ?>		
 
 		<div id="import_finished">			
-			<h1><?php _e('Import Complete!', 'wp_all_import_plugin'); ?></h1>						
+			<h1><?php _e('Import Complete!', 'wp_all_import_plugin'); ?></h1>
+			<div>
+
+			<div class="wpallimport-content-section wpallimport-fail-records">
+				<br/><br/>
+				<h3 class="wpallimport-complete-success" style="margin-bottom: 0;"><?php printf(__('The import of your file <span>%s</span> into Art Archive Portfolio has completed!','wp_all_import_plugin'), (PMXI_Plugin::$session->source['type'] != 'url') ? basename(PMXI_Plugin::$session->source['path']) : PMXI_Plugin::$session->source['path'])?></h3>
+				<div class="wpallimport-complete-warning wpallimport-fail-records" style="display: block; margin: 0;">
+					<h3><?php _e('However, there was a problem with this import.', 'wp_all_import_plugin'); ?></h3>
+					<h4>
+							<?php printf(__('Your data file contains %s records, however only <span class="inserted_count"></span> %s items were created.<br/><br/> It seems that rows #<br/> <span id="fail_records">0</span><br/>Do not contain some required element.<br/><br/>Please remember, successful import requires:<br/><ul style="list-style: initial; margin-left: 50px;"><li>uploaded Featured Art image into media library.</li><li>following mandatory data fields to be present: ID Number, Title, Country, Description of piece, Year.</li></ul>', 'wp_all_import_plugin'), $update_previous->count, $custom_type->labels->name); ?>
+					</h4>
+				</div>
+			</div>
+
 			<div class="wpallimport-content-section wpallimport-console wpallimport-complete-warning">
 				<h3><?php _e('Duplicate records detected during import', 'wp_all_import_plugin'); ?><a href="#help" class="wpallimport-help" title="<?php _e('The unique identifier is how WP All Import tells two items in your import file apart. If it is the same for two items, then the first item will be overwritten when the second is imported.', 'wp_all_import_plugin') ?>">?</a></h3>
 				<h4>
@@ -43,7 +59,8 @@
 				</h4>				
 				<input type="button" class="button button-primary button-hero wpallimport-large-button wpallimport-delete-and-edit" rel="<?php echo add_query_arg(array('id' => $update_previous->id, 'page' => 'pmxi-admin-manage', 'action' => 'delete_and_edit'), $this->baseUrl); ?>" value="<?php _e('Delete & Edit', 'wp_all_import_plugin'); ?>"/>				
 			</div>
-			<h3 class="wpallimport-complete-success"><?php printf(__('WP All Import successfully imported your file <span>%s</span> into your WordPress installation!','wp_all_import_plugin'), (PMXI_Plugin::$session->source['type'] != 'url') ? basename(PMXI_Plugin::$session->source['path']) : PMXI_Plugin::$session->source['path'])?></h3>						
+			<h3 class="wpallimport-complete-success" id="success_alert"><?php printf(__('WP All Import successfully imported your file <span>%s</span> into your WordPress installation!','wp_all_import_plugin'), (PMXI_Plugin::$session->source['type'] != 'url') ? basename(PMXI_Plugin::$session->source['path']) : PMXI_Plugin::$session->source['path'])?></h3>
+
 			<?php if ($ajax_processing): ?>
 			<p class="wpallimport-log-details"><?php printf(__('There were <span class="wpallimport-errors-count">%s</span> errors and <span class="wpallimport-warnings-count">%s</span> warnings in this import. You can see these in the import log.', 'wp_all_import_plugin'), 0, 0); ?></p>
 			<?php elseif ((int) PMXI_Plugin::$session->errors or (int) PMXI_Plugin::$session->warnings): ?>
@@ -212,6 +229,7 @@
 					$('#warnings').html(data.warnings);
 					$('#errors').html(data.errors);
 					$('#percents_count').html(data.percentage);
+					$('#fail_records').html(data.fail_records);
 				    $('#processbar div').css({'width': data.percentage + '%'});
 
 				    records_per_request = data.records_per_request;
@@ -221,6 +239,12 @@
 						clearInterval(interval);	
 
 						setTimeout(function() {
+
+							// CUSTOMIZE IMPORT, AUTHOR: THUYEN
+							if ($('#fail_records').html() != ""){
+								$('.wpallimport-fail-records').show();
+								$('#success_alert').hide();
+							}
 							
 							$('#loglist').append(data.log);
 							$('#process_notice').hide();

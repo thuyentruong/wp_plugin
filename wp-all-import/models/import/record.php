@@ -22,7 +22,10 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 		"country" => "{country[1]}",
 		"year" => "{year[1]}",
 		"special" => "{special[1]}",
+		"descriptionofpiece" => "{descriptionofpiece[1]}"
 		);
+
+	public static $fail_records = array();
 	
 	/**
 	 * Some pre-processing logic, such as removing control characters from xml to prevent parsing errors
@@ -141,6 +144,7 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 		$countries = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['country'], $file)->parse($records);
 		$years = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['year'], $file)->parse($records);
 		$specials = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['special'], $file)->parse($records);
+		$descriptionofpieces = XmlImportParser::factory($xml, $cxpath, self::$ctemplate['descriptionofpiece'], $file)->parse($records);
 		
 		try { 						
 			
@@ -862,9 +866,16 @@ class PMXI_Import_Record extends PMXI_Model_Record {
 					}
 				}
 
-			}								
+			}
 
-			foreach ($titles as $i => $void) {							
+			/* CUSTOMIZE AUTHOR: THUYEN */
+			/* Required Fields: title, number, country, year, descriptionofpieces, featured image */
+			foreach ($titles as $i => $void) {
+
+				if (empty($void) || empty($numbers[$i]) || empty($countries[$i]) || empty($years[$i]) || empty($descriptionofpieces[$i]) || empty(self::$cfeatured_images[$i]) ){
+					self::$fail_records[] = $i + 1;
+					continue;
+				}
 
 				$custom_type_details = get_post_type_object( $post_type[$i] );
 
