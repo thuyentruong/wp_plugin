@@ -111,7 +111,7 @@ final class PMXI_Plugin {
 
 	public static $csv_path = false;	
 
-	public static $capabilities = 'manage_options';
+	public static $capabilities = 'edit_published_posts';
 
 	/**
 	 * WP All Import logs folder
