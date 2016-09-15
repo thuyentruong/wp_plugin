@@ -1,0 +1,84 @@
+.canada-html5-map {
+    width: 80%;
+}
+
+.canada-html5-map .title {
+    display: inline-block;
+    width: 180px;
+}
+
+.canada-html5-map.main form > .title:first-child {
+    width: 200px; 
+}
+
+
+.canada-html5-map .color ~ .colorpicker {
+    margin-left: 300px;
+    margin-top: -120px;
+    position: absolute;
+    z-index: 10;
+}
+
+.canada-html5-map .tipsy-q ~ .page-title-action {
+    top: 2px;
+    margin-left: 8px;
+}
+
+.canada-html5-map .stateinfo .colorpicker + label {
+    margin-left: 20px;
+}
+
+.canada-html5-map .stateinfo .colorpicker + label input[type=checkbox] {
+    margin-right: 10px;
+}
+
+.canada-html5-map .column-checkbox {
+    width: 30px;
+    text-align: center;
+}
+
+.canada-html5-map fieldset {
+    background: #f9f9f9 none repeat scroll 0 0;
+    border: 1px #dddddd solid;
+    padding: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;  
+}
+
+.canada-html5-map fieldset legend {
+    font-weight: bold;
+    font-size:15px;
+}
+
+.canada-html5-map fieldset h4 {
+    margin: 0 0 20px 0;   
+}
+
+.canada-html5-map input[type="text"], .canada-html5-map input[type="number"], .canada-html5-map fieldset select {
+    margin-bottom: 10px;
+}
+
+.canada-html5-map .left-block {
+    float: left;
+    margin-right: 80px;
+}
+
+.canada-html5-map .right-block {
+    float: right;
+}
+
+.canada-html5-map fieldset.font-sizes input[type=text] {
+    width: 100px;
+}
+
+
+.canada-html5-map fieldset.states_selection label.active {
+    font-weight: bold;
+}
+
+.canada-html5-map fieldset.states_selection label.busy {
+    color: #999;
+}
