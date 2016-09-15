@@ -49,7 +49,7 @@
 	float: left;
 	position: absolute;
 	left: 0px;
-	bottom: 0px;
+	bottom: -40px;
 	z-index: 2;
 	margin: 10px
 }
@@ -132,10 +132,11 @@
 .fm-tooltip-x.fm-mobile-x {
     display: block;
 }
-.canadaHtml5Mapright {
+.canadaHtml5Mapright, .canadaHtml5Mapleft {
 	margin:auto;
 }
-.canadaHtml5Mapright .canadaHtml5MapContainer {
+.canadaHtml5Mapright .canadaHtml5MapContainer,
+.canadaHtml5Mapleft .canadaHtml5MapContainer {
     position: relative;
     float: left;
 }
@@ -145,7 +146,8 @@
 .canadaHtml5Mapbottom .canadaHtml5MapContainer {
     position: relative;
 }
-.canadaHtml5Mapright .canadaHtml5MapStateInfo, .canadaHtml5Mapright .canadaHtml5MapStateInfo {
+.canadaHtml5Mapright .canadaHtml5MapStateInfo, .canadaHtml5Mapright .canadaHtml5MapStateInfo,
+.canadaHtml5Mapleft .canadaHtml5MapStateInfo {
 	float: left;
     left: 20px;
     margin-right: 20px;
@@ -155,25 +157,29 @@
 
 }
 
-.canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapContainer {
+.canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapContainer,
+.canadaHtml5Mapleft.htmlMapResponsive .canadaHtml5MapContainer {
 	position: relative;
     float: none;
 	width: auto;
 }
-.canadaHtml5Mapright .canadaHtml5MapStateInfo, .canadaHtml5Mapright .canadaHtml5MapStateInfo {
+.canadaHtml5Mapright .canadaHtml5MapStateInfo, .canadaHtml5Mapright .canadaHtml5MapStateInfo,
+.canadaHtml5Mapleft .canadaHtml5MapStateInfo, .canadaHtml5Mapleft .canadaHtml5MapStateInfo {
 	float: none;
     left: auto;
     margin-right: 20px;
     position: relative;
 }
 @media (min-width: 768px){
-.canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapContainer {
+.canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapContainer,
+.canadaHtml5Mapleft.htmlMapResponsive .canadaHtml5MapContainer {
 	position: relative;
     float: left;
 	width: 60%
 }
 
-.canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapStateInfo, .canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapStateInfo {
+.canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapStateInfo, .canadaHtml5Mapright.htmlMapResponsive .canadaHtml5MapStateInfo,
+.canadaHtml5Mapleft.htmlMapResponsive .canadaHtml5MapStateInfo, .canadaHtml5Mapleft.htmlMapResponsive .canadaHtml5MapStateInfo {
 	float: left;
 	margin: 2%;
     position: relative;

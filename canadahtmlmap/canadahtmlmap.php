@@ -208,31 +208,64 @@ function canada_html5map_plugin_content($atts, $content) {
 
     $mapInit = "
         <!-- start Fla-shop.com HTML5 Map -->";
+
     $mapInit .= "
-        <div class='canadaHtml5Map$stateInfoArea$respInfo' style='$style'>
-        <div id='canada-html5-map-map-container_{$count}' class='canadaHtml5MapContainer'></div>
-            <style>
-                #canada-html5-map-map-container_{$count} .fm-tooltip-name {
-                    color: $popupNameColor;
-                    font-size: $popupNameFontSize;
-                }
-                #canada-html5-map-map-container_{$count} .fm-tooltip-comment {
-                    $comment_css
-                }
-            </style>
-            <script>
+        <div class='canadaHtml5Map$stateInfoArea$respInfo' style='$style'>";
+
+    if (strcmp($stateInfoArea, 'left') == 0){
+
+        $mapInit .= "
+             <div id='canada-html5-map-state-info{$prfx}' class='canadaHtml5MapStateInfo'>".
+                (empty($options['defaultAddInfo']) ? '' : apply_filters('the_content',$options['defaultAddInfo']))
+            ."</div>
+            <div id='canada-html5-map-map-container_{$count}' class='canadaHtml5MapContainer'></div>";
+    }else {
+        $mapInit .= "
+            <div id='canada-html5-map-map-container_{$count}' class='canadaHtml5MapContainer'></div>
+            <div id='canada-html5-map-state-info{$prfx}' class='canadaHtml5MapStateInfo'>".
+                (empty($options['defaultAddInfo']) ? '' : apply_filters('the_content',$options['defaultAddInfo']))
+            ."</div>";
+    }
+
+    $mapInit .="
+        <style>
+            #canada-html5-map-map-container_{$count} .fm-tooltip {
+            color: $popupNameColor;
+            font-size: $popupNameFontSize;
+            }
+
+	    #canada-html5-map-state-info{$prfx} {
+               float: $stateInfoArea;
+            }
+
+        </style>
+        <script>
             jQuery(function(){
                 var canadahtml5map_map_{$count} = new FlaShopCanadaMap(canadahtml5map_map_cfg_{$map_id});
                 canadahtml5map_map_{$count}.draw('canada-html5-map-map-container_{$count}');
             });
             </script>
-            <div id='canada-html5-map-state-info{$prfx}' class='canadaHtml5MapStateInfo'>".
-            (empty($options['defaultAddInfo']) ? '' : apply_filters('the_content',$options['defaultAddInfo']))
-            ."</div>
             </div>
-            <div style='clear: both'></div>
-            <!-- end HTML5 Map -->
-    ";
+        <div style='clear: both'></div>
+        <!-- end HTML5 Map -->
+
+        <script>
+ moveContentUnderMap();
+            jQuery( window ).resize(function() {
+	               moveContentUnderMap();
+	        });
+
+		function moveContentUnderMap(){
+			 if ( window.innerWidth < 768){
+	                    jQuery('.canadaHtml5Map$stateInfoArea').append(jQuery('#canada-html5-map-state-info{$prfx}'));
+	                }else {
+				if('{$stateInfoArea}' == 'left'){
+					jQuery('.canadaHtml5Map$stateInfoArea').prepend(jQuery('#canada-html5-map-state-info{$prfx}'));
+				}
+			}
+		}
+        </script>";
+
     
     $count++;
 

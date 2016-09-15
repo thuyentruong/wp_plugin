@@ -220,7 +220,8 @@ echo "<div class=\"wrap\"><h2>" . __('HTML5 Map Config', 'canada-html5-map') . "
         <legend><?php echo __('Content Info', 'canada-html5-map'); ?></legend>    
         <span class="title"><?php echo __('Additional Info Area:', 'canada-html5-map'); ?> </span>
         <label><?php echo __('At right:', 'canada-html5-map') ?> <input type="radio" name="options[statesInfoArea]" value="right" <?php echo $options[$map_id]['statesInfoArea'] == 'right'?'checked':''?> /></label>&nbsp;&nbsp;&nbsp;&nbsp;
-        <label><?php echo __('At bottom:', 'canada-html5-map') ?> <input type="radio" name="options[statesInfoArea]" value="bottom" <?php echo $options[$map_id]['statesInfoArea'] == 'bottom'?'checked':''?> /></label>
+        <label><?php echo __('At bottom:', 'canada-html5-map') ?> <input type="radio" name="options[statesInfoArea]" value="bottom" <?php echo $options[$map_id]['statesInfoArea'] == 'bottom'?'checked':''?> /></label>&nbsp;&nbsp;&nbsp;&nbsp;
+        <label><?php echo __('At left:', 'canada-html5-map') ?> <input type="radio" name="options[statesInfoArea]" value="left" <?php echo $options[$map_id]['statesInfoArea'] == 'left'?'checked':''?> /></label>
         <span class="tipsy-q" original-title="<?php esc_attr_e('Where to place an additional information about state', 'canada-html5-map'); ?>">[?]</span><br />
         <br/>
         <div id="action-info">
