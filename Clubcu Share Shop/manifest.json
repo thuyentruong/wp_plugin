@@ -1,0 +1,28 @@
+{
+    "name": "Clubcu Share Shop",
+    "version": "1.0.1",
+    "description": "Clubcu Share Shop Extension",
+    "manifest_version": 2,
+    "browser_action": {
+      "default_icon": "images/icon-clubcu.png",
+      "default_title": "Clubcu Share Shop"
+    },
+    "permissions": ["tabs" ],
+    "content_scripts": [
+      {
+        "matches": ["http://clubcu.com/c/*", "http://clubcu.com/category/*",
+                    "http://clubcu.test.showroomhub.com/c/*", "http://clubcu.test.showroomhub.com/category/*"],
+        "js": ["scripts/common.js", "scripts/content/clubcu.js"]
+      },
+      {
+        "matches": ["http://www.blaxsand.com/c/*", "http://www.blaxsand.com/category/*",
+                    "http://nine.test.showroomhub.com/c/*", "http://nine.test.showroomhub.com/category/*"],
+        "js": ["scripts/common.js", "scripts/content/blaxsand.js"]
+      },
+      {
+        "matches": ["http://noorside-shop.com/c/*", "http://noorside-shop.com/category/*",
+                    "http://ten.test.showroomhub.com//c/*", "http://ten.test.showroomhub.com/category/*" ],
+        "js": ["scripts/common.js", "scripts/content/noorside.js"]
+      }   
+    ]
+}
